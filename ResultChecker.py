@@ -6,7 +6,7 @@ from my_sorts import human_sorted
 from utils import CustomList
 
 
-class bcolors:
+class BColors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
@@ -76,6 +76,11 @@ def get_python_result(input_directory, algorithm_name, in_file_content):
     return algorithm_result
 
 
+class LanguageError(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(self, *args, **kwargs)
+
+
 def check_results(algorithm_name, input_directory, programming_lang):
     input_files = human_sorted(get_input_files_data(input_directory))
 
@@ -86,12 +91,13 @@ def check_results(algorithm_name, input_directory, programming_lang):
         in_file_name = in_file_data['name']
         in_file_content = in_file_data['content']
 
-        if programming_lang == 'cpp':
-            algorithm_result = get_cpp_result(input_directory, algorithm_name, in_file_content)
-        elif programming_lang == 'python':
-            algorithm_result = get_python_result(input_directory, algorithm_name, in_file_content)
-        else:
-            return -1
+        languages = {'cpp': get_cpp_result,
+                     'python': get_python_result}
+
+        try:
+            algorithm_result = languages[programming_lang](input_directory, algorithm_name, in_file_content)
+        except KeyError:
+            raise LanguageError('{} not supported yet.'.format(programming_lang))
 
         # print(in_file_content)  # temporary
         # print(algorithm_result)
@@ -99,10 +105,10 @@ def check_results(algorithm_name, input_directory, programming_lang):
         pyperclip.copy(in_file_content)  # temporary
 
         if algorithm_result == "".join(get_out_file_content(input_directory, in_file_name)):
-            print(bcolors.OKGREEN + 'Testcase z pliku {0} zakończony pomyślnie :)'.format(in_file_name) + bcolors.ENDC)
+            print(BColors.OKGREEN + 'Testcase z pliku {0} zakończony pomyślnie :)'.format(in_file_name) + BColors.ENDC)
         else:
-            print(bcolors.FAIL + 'Testcase z pliku {0} zakończony niepowodzeniem :('.format(in_file_name) +
-                  bcolors.ENDC)
+            print(BColors.FAIL + 'Testcase z pliku {0} zakończony niepowodzeniem :('.format(in_file_name) +
+                  BColors.ENDC)
         # input()
 
 
@@ -110,17 +116,19 @@ def result_checker():
     while True:
         try:
             algorithm_name = input('Podaj nazwę algorytmu, którego poprawność chcesz sprawdzić: ')
-            programming_lang = input('Podaj język, w którym napisany jest algorytm: ')
+            programming_lang = input('Podaj język, w którym napisany jest algorytm: ').lower()
             input_directory = find_test_data_directory(algorithm_name)
 
-            if check_results(algorithm_name, input_directory, programming_lang) == -1:
-                print('{} not supported yet.'.format(programming_lang))
+            try:
+                check_results(algorithm_name, input_directory, programming_lang)
+            except LanguageError as lang_err:
+                print(lang_err.__str__())
             else:
                 print('Created by Jatimir...')
 
             break
         except NameError as err:
-            print(bcolors.FAIL + err.__str__() + bcolors.ENDC)
+            print(BColors.FAIL + err.__str__() + BColors.ENDC)
 
 
 def main():
