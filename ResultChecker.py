@@ -3,6 +3,7 @@ import pyperclip
 from cpp_runner import CppRunner
 from python_runner import PythonRunner
 from my_sorts import human_sorted
+from utils import CustomList
 
 
 class bcolors:
@@ -23,25 +24,16 @@ def find_test_data_directory(name):
     called by the name of algorithm.
     :return: path containing .in and .out test files
     """
-    __dir__ = os.path.dirname(os.path.abspath(__file__))
-    input_directories = []
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    input_directories = CustomList(1)
 
-    for root, directories, file_names in os.walk(__dir__):
+    for root, directories, file_names in os.walk(current_dir):
         for directory in directories:
             if name.lower() == directory.lower():
                 input_directories.append(os.path.join(root, directory))
 
-    try:
-        input_directory = input_directories[0]
-    except IndexError:
-        raise NameError('Przykro mi... Brak danych testowych dla algorytmu o takiej nazwie!!\n')
-
-    try:
-        input_directory = input_directories[1]
-    except IndexError:
-        return input_directory
-    else:
-        raise NameError('Uwaga! Wykryto więcej niż jeden katalog z danymi algorytmu o podanej przez Ciebie nazwie...\n')
+    input_directories.is_okey()
+    return input_directories[0]
 
 
 def convert_file_into_string(path):
@@ -70,16 +62,16 @@ def get_input_files_data(input_directory):
     return input_files
 
 
-def get_cpp_result(algorithm_name, in_file_content):
-    cpp = CppRunner(algorithm_name)  # założenie że algorytm jest w tym samym folderze co skrypt
+def get_cpp_result(input_directory, algorithm_name, in_file_content):
+    cpp = CppRunner(input_directory, algorithm_name)  # założenie że algorytm jest w tym samym folderze co skrypt
     cpp.compile()
     algorithm_result = cpp.get_output(in_file_content)
     cpp.tidy_up()
     return algorithm_result
 
 
-def get_python_result(algorithm_name, in_file_content):
-    python = PythonRunner(algorithm_name)  # założenie że algorytm jest w tym samym folderze co skrypt
+def get_python_result(input_directory, algorithm_name, in_file_content):
+    python = PythonRunner(input_directory, algorithm_name)  # założenie że algorytm jest w tym samym folderze co skrypt
     algorithm_result = python.get_output(in_file_content)
     return algorithm_result
 
@@ -95,15 +87,14 @@ def check_results(algorithm_name, input_directory, programming_lang):
         in_file_content = in_file_data['content']
 
         if programming_lang == 'cpp':
-            algorithm_result = get_cpp_result(algorithm_name, in_file_content)
+            algorithm_result = get_cpp_result(input_directory, algorithm_name, in_file_content)
         elif programming_lang == 'python':
-            algorithm_result = get_python_result(algorithm_name, in_file_content)
+            algorithm_result = get_python_result(input_directory, algorithm_name, in_file_content)
         else:
             return -1
 
         # print(in_file_content)  # temporary
         pyperclip.copy(in_file_content)  # temporary
-
         # print(algorithm_result)
         # print("".join(get_out_file_content(input_directory, in_file_name)))
 
@@ -112,7 +103,6 @@ def check_results(algorithm_name, input_directory, programming_lang):
         else:
             print(bcolors.FAIL + 'Testcase z pliku {0} zakończony niepowodzeniem :('.format(in_file_name) +
                   bcolors.ENDC)
-            
         # input()
 
 
@@ -130,7 +120,7 @@ def result_checker():
 
             break
         except NameError as err:
-            print(err)
+            print(bcolors.FAIL + err.__str__() + bcolors.ENDC)
 
 
 def main():
