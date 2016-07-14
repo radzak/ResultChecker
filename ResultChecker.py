@@ -131,7 +131,6 @@ def result_checker():
             break
         except NameError as err:
             print(err)
-            # heheh
 
 
 def main():
