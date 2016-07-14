@@ -94,9 +94,9 @@ def check_results(algorithm_name, input_directory, programming_lang):
             return -1
 
         # print(in_file_content)  # temporary
-        pyperclip.copy(in_file_content)  # temporary
         # print(algorithm_result)
         # print("".join(get_out_file_content(input_directory, in_file_name)))
+        pyperclip.copy(in_file_content)  # temporary
 
         if algorithm_result == "".join(get_out_file_content(input_directory, in_file_name)):
             print(bcolors.OKGREEN + 'Testcase z pliku {0} zakończony pomyślnie :)'.format(in_file_name) + bcolors.ENDC)
