@@ -17,6 +17,11 @@ class BColors:
     UNDERLINE = '\033[4m'
 
 
+class LanguageError(Exception):
+    def __init__(self, *args, **kwargs):
+        super().__init__(self, *args, **kwargs)
+
+
 def find_test_data_directory(name):
     """
     Function looking for all directories with a certain 'name' within directory of script. If it finds zero
@@ -76,11 +81,6 @@ def get_python_result(input_directory, algorithm_name, in_file_content):
     return algorithm_result
 
 
-class LanguageError(Exception):
-    def __init__(self, *args, **kwargs):
-        super().__init__(self, *args, **kwargs)
-
-
 def check_results(algorithm_name, input_directory, programming_lang):
     input_files = human_sorted(get_input_files_data(input_directory))
 
@@ -97,7 +97,7 @@ def check_results(algorithm_name, input_directory, programming_lang):
         try:
             algorithm_result = languages[programming_lang](input_directory, algorithm_name, in_file_content)
         except KeyError:
-            raise LanguageError('{} not supported yet.'.format(programming_lang))
+            raise LanguageError('I\'m sorry, but language: {} is not supported yet.'.format(programming_lang))
 
         # print(in_file_content)  # temporary
         # print(algorithm_result)
@@ -122,7 +122,7 @@ def result_checker():
             try:
                 check_results(algorithm_name, input_directory, programming_lang)
             except LanguageError as lang_err:
-                print(lang_err.__str__())
+                print(lang_err.args[1])
             else:
                 print('Created by Jatimir...')
 
